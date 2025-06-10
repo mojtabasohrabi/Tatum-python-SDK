@@ -87,6 +87,28 @@ class TatumClient:
         response = self.session.get(endpoint)
         return _handle_response(response)
 
+    def transfer_trx(self, from_address: str, to_address: str, amount: str, private_key: str = None,
+                     signature_id: str = None):
+        if private_key and signature_id:
+            raise ValueError("Only one of private_key or signature_id should be provided.")
+        if not private_key and not signature_id:
+            raise ValueError("Either private_key or signature_id must be provided.")
+
+        endpoint = f"{self.base_url}/v3/{self.blockchain}/transaction"
+        data = {
+            "from": from_address,
+            "to": to_address,
+            "amount": amount,
+        }
+        if private_key:
+            data["privateKey"] = private_key
+        elif signature_id:
+            data["signatureId"] = signature_id
+
+        response = self.session.post(endpoint, json=data)
+        return _handle_response(response)
+
+
     def _generate_private_key(self, index, mnemonic):
         endpoint = f"{self.base_url}/v3/{self.blockchain}/wallet/priv"
         data = json.dumps({
